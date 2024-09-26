@@ -1,4 +1,6 @@
 # Factors-for-pharmaceutical-drugs
+![1000001646](https://github.com/user-attachments/assets/edc8da91-b4cd-4fbb-82fb-4ebc8f474354)
+
 The use of medication to diagnose, cure, treat or prevent diseases is something almost
 certain that every person in their life will take part in, whether it be a prescription from a doctor
 or over the counter. The pharmaceutical industry is one of the biggest industries in the world.
