@@ -1,0 +1,277 @@
+---
+title: "Project 2- Group 14"
+author: "Group 14
+Vrushali Patel 
+Vallesia Pierre Louis
+Ryan Chen
+"
+date: "2024-04-08"
+output:
+  pdf_document: default
+  word_document: default
+---
+```{r}
+library(ggplot2)
+library(corrplot)
+library(MASS)
+library(car)
+library(dplyr)
+
+```
+
+#load
+```{r}
+Drug_clean <- read.csv("C:/Users/valle/Desktop/Drug_clean.csv")
+Drug_clean<- Drug_clean[,3:10]
+str(Drug_clean)
+```
+
+Clean Data
+```{r}
+Drug_clean<- na.omit(Drug_clean)
+
+
+Drug_clean <- subset(Drug_clean, Indication != "other")
+Drug_clean <- subset(Drug_clean, Indication != "\n")
+Drug_clean <- subset(Drug_clean, Type != "RX/OTC")
+Drug_clean <- subset(Drug_clean, Type != "\n")
+
+Drug_clean$Type <- factor(Drug_clean$Type)
+Drug_clean$Indication <- factor(Drug_clean$Indication)
+
+str(Drug_clean)
+```
+
+
+
+outliers
+```{r}
+model <- lm(Satisfaction ~ EaseOfUse + Effective+ Form + Indication + Price + Reviews + Type, data = Drug_clean)
+cooks_distance <- cooks.distance(model)
+
+#Jackknife residuals follow t distribution with n-k-2 df.
+t <- qt(.025, 645-8-2, lower.tail = FALSE)
+print(t)
+leverage <- hatvalues(model)
+studentized_residuals <- rstudent(model)
+```
+
+```{r}
+plot(model)
+```
+
+```{r}
+#Run Shapiro-Wilk Test for normality of errors
+shapiro.test(model$residuals)
+boxcox(model)
+
+```
+
+
+```{r}
+outliers <- which(cooks_distance > 1)
+print(outliers)
+
+#2(k+1)/n
+threshold <- (2 *9)/(645)
+print(threshold)
+outliers_leverage <- which(leverage > (2 *9)/(645))
+
+
+outliers_studentized <- which(abs(studentized_residuals) > t)
+length(outliers_leverage)
+print("Indices of potential outliers based on leverage:")
+print(outliers_leverage)
+
+print("Indices of potential outliers based on studentized residuals:")
+print(outliers_studentized)
+length(outliers_studentized)
+#common outliers
+common_outliers <- intersect(outliers_leverage, outliers_studentized)
+print(common_outliers) 
+
+
+```
+
+```{r}
+#Run Shapiro-Wilk Test for normality of errors
+shapiro<- shapiro.test(model$residuals)
+print(shapiro)
+
+
+
+```
+```{r}
+#colinearity
+vif_values <- vif(model)
+sorted_vif_values <- sort(vif_values, decreasing = TRUE)
+print(sorted_vif_values)
+#if VIF above 10 collinearity violated 
+```
+
+
+```{r}
+
+#reference from https://rpubs.com/Alema/1000474
+
+#Drug_clean$Indication <- factor(Drug_clean$Indication)
+turn_numeric <- Drug_clean[, sapply(Drug_clean, is.numeric)]
+
+cor_matrix <- cor(turn_numeric)
+
+corrplot(cor_matrix,  method = "number", type = "upper", tl.cex = .7, col = colorRampPalette(c("pinkz", "white", "darkgreen"))(100),
+         addCoef.col = "black", bg = "gray")
+
+```
+
+```{r}
+plot(Drug_clean$EaseOfUse,Drug_clean$Satisfaction)
+plot(Drug_clean$Effective,Drug_clean$Satisfaction)
+plot(Drug_clean$Price,Drug_clean$Satisfaction)
+plot(Drug_clean$Reviews,Drug_clean$Satisfaction)
+
+plot(log(Drug_clean$Satisfaction))
+
+```
+
+
+Transformation model we decided not to use 
+```{r}
+logtransformmodel <- lm((Satisfaction)^2 ~  EaseOfUse + Effective + Form + Indication + Price + Reviews + Type, data = Drug_clean)
+
+
+log_residuals <- residuals(logtransformmodel)
+
+log_residuals_shapiro <-shapiro.test(log_residuals)
+
+
+print(log_residuals_shapiro)
+summary(logtransformmodel)
+plot(logtransformmodel)
+```
+
+
+
+Selecting the best model, Backwards Elimination 
+```{r}
+model <- lm(Satisfaction ~ EaseOfUse + Effective+ Form + Indication + Price + Reviews + Type, data = Drug_clean)
+AIC(model)
+BIC(model)
+summary(model)
+```
+
+
+
+
+
+Removed price since it has the highest Pvalue
+```{r}
+model_2 <- lm(Satisfaction ~ EaseOfUse + Effective+ Form + Indication  + Reviews + Type, data = Drug_clean)
+AIC(model_2)
+BIC(model_2)
+summary(model_2)
+```
+
+Remove tablet form only
+```{r}
+
+data_without_formtablet <- subset(Drug_clean, Form != "Tablet")
+data_without_formtablet$Form <- factor(data_without_formtablet$Form)
+
+model_3 <- lm(Satisfaction ~ EaseOfUse + Effective+ Form + Indication  + Reviews + Type , data = data_without_formtablet)
+AIC(model_3)
+BIC(model_3)
+summary(model_3)
+```
+Without reviews
+```{r}
+
+data_without_formtablet <- subset(Drug_clean, Form != "Tablet" )
+data_without_formtablet$Form <- factor(data_without_formtablet$Form)
+
+new_data <- data_without_formtablet
+model_4 <- lm(Satisfaction ~ EaseOfUse + Effective+ Form + Indication   + Type , data = new_data)
+AIC(model_4)
+BIC(model_4)
+summary(model_4)
+```
+Removed liquid inject since it has the higher p value
+```{r}
+
+
+
+data_without_formliquid <- subset(new_data, Form != "Liquid (Inject)" )
+data_without_formliquid$Form <- factor(data_without_formliquid$Form)
+
+new_data_2 <-data_without_formliquid
+model_5 <- lm(Satisfaction ~ EaseOfUse + Effective+ Form + Indication   + Type , data = new_data_2)
+AIC(model_5)
+BIC(model_5)
+summary(model_5)
+
+
+```
+
+Remove form other
+```{r}
+data_without_formother <- subset(new_data_2, Form != "Other" )
+data_without_formother$Form <- factor(data_without_formother$Form)
+
+new_data_3 <-data_without_formother
+model_6 <- lm(Satisfaction ~ EaseOfUse + Effective+ Form + Indication   + Type , data = new_data_3)
+AIC(model_6)
+BIC(model_6)
+summary(model_6)
+
+```
+Final plot of model
+```{r}
+final_model<-model_6
+plot(final_model)
+```
+
+After backwards elimination, our final model is
+Satisfaction = -049258 + 0.11392(EaseOfUse)+0.90651(Effective)+0.20885(FOrmCream) + 0.16081(FormLiquid (Drink)) + 0.17707(IndicationOn Label) -0.21956(TypeRX)
+
+
+
+MSE
+
+
+```{r}
+
+library(caret)
+library(Metrics)
+
+#set.seed(123)
+index <- createDataPartition(Drug_clean$Satisfaction, p=0.8, list=FALSE)
+trainData <- Drug_clean[index, ]
+testData <- Drug_clean[-index, ]
+
+modeloverfit <- lm(Satisfaction ~ ., data=trainData)
+
+trainPredictions <- predict(modeloverfit, trainData)
+testPredictions <- predict(modeloverfit, testData)
+
+trainRMSE <- rmse(trainData$Satisfaction, trainPredictions)
+testRMSE <- rmse(testData$Satisfaction, testPredictions)
+
+print(paste("Training RMSE:", trainRMSE))
+print(paste("Test RMSE:", testRMSE))
+
+if (trainRMSE < testRMSE) {
+    print("The model may be overfitting the training data.")
+} else {
+    print("The model's performance is consistent across training and test data.")
+}
+
+
+```
+
+
+```{r}
+anova(final_model)
+```
+
+
+
