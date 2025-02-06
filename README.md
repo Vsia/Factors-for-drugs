@@ -2,7 +2,7 @@
 ![1000001646](https://github.com/user-attachments/assets/edc8da91-b4cd-4fbb-82fb-4ebc8f474354)
 
 
-Motivation 
+**Motivation**
 ![motivation_vallesia_pierre_louis](https://github.com/user-attachments/assets/d4447f98-20bf-4539-b44e-46212ad0ac73)
 
 The use of medication to diagnose, cure, treat or prevent diseases is something almost
@@ -17,10 +17,12 @@ satisfaction when selecting medication. This can also highlight to the pharmaceu
 which factors to include with their products when selling to consumers to achieve the highest
 customer satisfaction possible
 
-Data Description
+**Data Description**
+
 The dataset is from Kaggle and was scrapped from WebMD.
 
-Basic Data Analysis and Model Diagostic
+**Basic Data Analysis and Model Diagostic**
+
 The obvious outliers were the drugs over $5000. Those drugs were not removed as there are many patients whose medications costs are at those prices. For example, Paclitaxel-Protein Bound is used by breast and pancreatic cancer patients. At $10362.19 , the patients satisfaction are improtant. 
 ![vallesia_pierre_louis_outliers](https://github.com/user-attachments/assets/67f600ed-c222-494f-925c-d4e5f393db77)
 
@@ -37,6 +39,7 @@ To find the final model, backwards elimination was perfomed using F-Statistic an
 ![vallesia_pierre_louis_final_model](https://github.com/user-attachments/assets/e2a1db11-9191-492e-8617-2fae9cd4da49)
 
 The full report is available here on [Github](https://github.com/Vsia/Factors-for-drugs/blob/main/Final_Project_Report_Group_14.pdf). 
+
 The R markdown code is also included on [Github](https://github.com/Vsia/Factors-for-drugs/blob/main/factors_for_drugs_r_markdown.Rmd). 
 
 
